@@ -10,20 +10,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_subject'])) {
     $subject_name = $_POST['subject-name'];
 
     // Call function to add subject to the database
-    addSubject($subject_code, $subject_name);
+    $result = addSubject($subject_code, $subject_name);
+    if ($result) {
+        // Redirect back to the same page after successful addition
+        header("Location: add.php");
+        exit;
+    } else {
+        $error_message = "Error adding the subject. Please try again.";
+    }
 }
 
-// Function to add subject to the database
-
+// Get all subjects
 $subjects = getSubjects();
 ?>
 
+<!DOCTYPE html>
 <html>
 <head>
     <title>Add a New Subject</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-          <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -108,7 +114,10 @@ $subjects = getSubjects();
         .btn-delete:hover {
             background-color: #c82333;
         }
-    </style>
+        .error {
+            color: red;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -117,6 +126,12 @@ $subjects = getSubjects();
         <div class="breadcrumb">
             <a href="#">Dashboard</a> / Add Subject
         </div>
+
+        <!-- Display error message if there is any -->
+        <?php if (isset($error_message)): ?>
+            <div class="error"><?php echo htmlspecialchars($error_message); ?></div>
+        <?php endif; ?>
+
         <div class="form-container">
             <form method="POST" action="">
                 <div class="form-group">
@@ -130,6 +145,7 @@ $subjects = getSubjects();
                 <button type="submit" name="add_subject" class="btn">Add Subject</button>
             </form>
         </div>
+
         <div class="table-container">
             <h2>Subject List</h2>
             <table class="table">
@@ -146,10 +162,8 @@ $subjects = getSubjects();
                             <td><?php echo htmlspecialchars($subject['subject_code']); ?></td>
                             <td><?php echo htmlspecialchars($subject['subject_name']); ?></td>
                             <td>
-                                <button class="btn btn-edit">Edit</button>
+                                <a href="edit.php?subject_code=<?php echo urlencode($subject['subject_code']); ?>&subject_name=<?php echo urlencode($subject['subject_name']); ?>" class="btn btn-edit">Edit</a>
                                 <a href="delete.php?subject_code=<?php echo urlencode($subject['subject_code']); ?>&subject_name=<?php echo urlencode($subject['subject_name']); ?>" class="btn btn-delete">Delete</a>
-
-</td>
                             </td>
                         </tr>
                     <?php endforeach; ?>
