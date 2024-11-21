@@ -1,6 +1,6 @@
 <?php
 
-
+// Database connection functions
 function openCon() {
     $conn = new mysqli("localhost", "root", "", "dct-ccs-finals");
 
@@ -15,10 +15,12 @@ function closeCon($conn) {
     $conn->close();
 }
 
+// Debugging helper function
 function debugLog($message) {
     error_log("[DEBUG] " . $message);
 }
 
+// Login function
 function loginUser($username, $password) {
     $conn = openCon();
 
@@ -54,10 +56,12 @@ function loginUser($username, $password) {
     return false;
 }
 
+// Check if user is logged in
 function isLoggedIn() {
     return isset($_SESSION['email']);
 }
 
+// Add a new subject
 function addSubject($subject_code, $subject_name) {
     $conn = openCon();
     
@@ -79,7 +83,7 @@ function addSubject($subject_code, $subject_name) {
     closeCon($conn);
 }
 
-// Fetch all subjects from the database to display in the table
+// Fetch all subjects
 function getSubjects() {
     $conn = openCon();
     
@@ -98,30 +102,88 @@ function getSubjects() {
     closeCon($conn);
     return $subjects;
 }
+
+// Delete a subject
 function deleteSubject($subject_code) {
-    $connection = openCon(); // Use the existing function for connection
+    $conn = openCon();
 
     // Prepare and execute delete query
-    $stmt = $connection->prepare("DELETE FROM subjects WHERE subject_code = ?");
+    $stmt = $conn->prepare("DELETE FROM subjects WHERE subject_code = ?");
     if ($stmt === false) {
-        die("Prepare failed: " . $connection->error);
+        die("Prepare failed: " . $conn->error);
     }
 
     $stmt->bind_param("s", $subject_code);
     $result = $stmt->execute();
 
     if (!$result) {
-        error_log("Error deleting subject: " . $stmt->error); // Log error for debugging
+        error_log("Error deleting subject: " . $stmt->error);
     }
 
-    // Close resources
     $stmt->close();
-    closeCon($connection);
+    closeCon($conn);
 
-    // Return the result of the deletion
     return $result;
 }
 
+// Fetch a single subject by subject code
+function getSubjectByCode($subject_code) {
+    $conn = openCon();
 
+    $query = "SELECT * FROM subjects WHERE subject_code = ?";
+    $stmt = $conn->prepare($query);
+    if ($stmt === false) {
+        die("Error preparing statement: " . $conn->error);
+    }
+
+    $stmt->bind_param("s", $subject_code);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $subject = $result->fetch_assoc();
+
+    $stmt->close();
+    closeCon($conn);
+
+    return $subject;
+}
+
+// Update a subject
+function getSubjectById($id) {
+    $conn = openCon();
+    $sql = "SELECT * FROM subjects WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $subject = null;
+    if ($result->num_rows > 0) {
+        $subject = $result->fetch_assoc();
+    }
+
+    $stmt->close();
+    closeCon($conn);
+    return $subject;
+}
+
+function updateSubjectName($id, $subjectName) {
+    $conn = openCon();
+    $sql = "UPDATE subjects SET subject_name = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("si", $subjectName, $id);
+    
+    if ($stmt->execute()) {
+        debugLog("Subject with ID $id updated successfully to $subjectName.");
+        $stmt->close();
+        closeCon($conn);
+        return true;
+    } else {
+        debugLog("Error updating subject with ID $id: " . $stmt->error);
+    }
+
+    $stmt->close();
+    closeCon($conn);
+    return false;
+}   
 
 ?>
