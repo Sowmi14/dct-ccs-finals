@@ -147,7 +147,9 @@ $subjects = getSubjects();
                             <td><?php echo htmlspecialchars($subject['subject_name']); ?></td>
                             <td>
                                 <button class="btn btn-edit">Edit</button>
-                                <button class="btn btn-delete">Delete</button>
+                                <a href="delete.php?subject_code=<?php echo urlencode($subject['subject_code']); ?>&subject_name=<?php echo urlencode($subject['subject_name']); ?>" class="btn btn-delete">Delete</a>
+
+</td>
                             </td>
                         </tr>
                     <?php endforeach; ?>
