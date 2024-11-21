@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Start output buffering
 include('../partials/header.php'); 
 include('../partials/side-bar.php'); 
 include('../../functions.php');
@@ -10,7 +11,6 @@ $subject_name = isset($_GET['subject_name']) ? htmlspecialchars($_GET['subject_n
 // Handle deletion when the delete button is clicked
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_subject'])) {
     $subject_code = $_POST['subject_code'];
-    error_log("Deleting subject: $subject_code"); // Debugging
 
     if (deleteSubject($subject_code)) {
         header('Location: add.php?message=Subject+deleted+successfully');
@@ -21,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_subject'])) {
     }
 }
 
+ob_end_flush(); // End output buffering
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
