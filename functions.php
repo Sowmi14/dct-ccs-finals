@@ -4,6 +4,7 @@ session_start();
 function openCon() {
     $conn = new mysqli("localhost", "root", "", "dct-ccs-finals");
 
+    // Check for connection errors
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
@@ -22,8 +23,13 @@ function loginUser($username, $password) {
     $conn = openCon();
 
     // Query to fetch user data by email
-    $sql = "SELECT * FROM users WHERE email = ?"; 
+    $sql = "SELECT * FROM users WHERE email = ?";
     $stmt = $conn->prepare($sql);
+    
+    if ($stmt === false) {
+        die("Error preparing statement: " . $conn->error);
+    }
+    
     $stmt->bind_param("s", $username);
     $stmt->execute();
 
@@ -48,9 +54,48 @@ function loginUser($username, $password) {
     return false;
 }
 
-
-
 function isLoggedIn() {
     return isset($_SESSION['email']);
+}
+
+function addSubject($subject_code, $subject_name) {
+    $conn = openCon();
+    
+    // Prepare statement to insert new subject
+    $stmt = $conn->prepare("INSERT INTO subjects (subject_code, subject_name) VALUES (?, ?)");
+    
+    if ($stmt === false) {
+        die("Error preparing statement: " . $conn->error);
+    }
+
+    $stmt->bind_param("ss", $subject_code, $subject_name);
+
+    // Check if execution is successful
+    if (!$stmt->execute()) {
+        die("Error executing query: " . $stmt->error);
+    }
+
+    $stmt->close();
+    closeCon($conn);
+}
+
+// Fetch all subjects from the database to display in the table
+function getSubjects() {
+    $conn = openCon();
+    
+    $sql = "SELECT * FROM subjects";
+    $result = $conn->query($sql);
+    
+    if ($result === false) {
+        die("Error fetching subjects: " . $conn->error);
+    }
+    
+    $subjects = [];
+    while ($row = $result->fetch_assoc()) {
+        $subjects[] = $row;
+    }
+
+    closeCon($conn);
+    return $subjects;
 }
 ?>
