@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 
 function openCon() {
     $conn = new mysqli("localhost", "root", "", "dct-ccs-finals");
@@ -98,4 +98,30 @@ function getSubjects() {
     closeCon($conn);
     return $subjects;
 }
+function deleteSubject($subject_code) {
+    $connection = openCon(); // Use the existing function for connection
+
+    // Prepare and execute delete query
+    $stmt = $connection->prepare("DELETE FROM subjects WHERE subject_code = ?");
+    if ($stmt === false) {
+        die("Prepare failed: " . $connection->error);
+    }
+
+    $stmt->bind_param("s", $subject_code);
+    $result = $stmt->execute();
+
+    if (!$result) {
+        error_log("Error deleting subject: " . $stmt->error); // Log error for debugging
+    }
+
+    // Close resources
+    $stmt->close();
+    closeCon($connection);
+
+    // Return the result of the deletion
+    return $result;
+}
+
+
+
 ?>
